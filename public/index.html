@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>求职进度管理系统</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232563eb'/%3E%3Cpath d='M25 50 L45 70 L78 32' stroke='white' stroke-width='12' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <h1>求职进度管理</h1>
+        <p class="subtitle">投递 · 面试 · Offer 全流程追踪</p>
+      </div>
+      <nav class="tabs">
+        <button class="tab-btn active" data-view="dashboard">数据看板</button>
+        <button class="tab-btn" data-view="applications">投递记录</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ========== 数据看板 ========== -->
+    <section id="view-dashboard" class="view active">
+      <div class="stat-cards" id="statCards"></div>
+      <div class="charts-grid">
+        <div class="card">
+          <h2 class="card-title">投递漏斗</h2>
+          <div id="funnelChart" class="chart"></div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">月度趋势</h2>
+          <div id="trendChart" class="chart"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="card-title">最新投递</h2>
+        <div id="recentList"></div>
+      </div>
+    </section>
+
+    <!-- ========== 投递记录 ========== -->
+    <section id="view-applications" class="view">
+      <div class="toolbar">
+        <input type="search" id="searchInput" placeholder="搜索公司或岗位...">
+        <select id="statusFilter">
+          <option value="">全部状态</option>
+          <option value="applied">已投递</option>
+          <option value="interviewed">面试中</option>
+          <option value="offered">已拿到 Offer</option>
+          <option value="rejected">未通过/已结束</option>
+        </select>
+        <button id="btnAdd" class="btn btn-primary">+ 新增投递</button>
+      </div>
+      <div class="card table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>公司</th>
+              <th>岗位</th>
+              <th>投递时间</th>
+              <th>状态</th>
+              <th>面试时间</th>
+              <th>Offer 时间</th>
+              <th>结束时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="appTableBody"></tbody>
+        </table>
+        <div class="table-footer">
+          <span id="tableInfo"></span>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== 新增 / 编辑弹窗 ========== -->
+  <div class="modal-overlay hidden" id="editModal">
+    <div class="modal">
+      <h2 id="editModalTitle">新增投递</h2>
+      <form id="editForm">
+        <div class="form-row">
+          <label>公司名称 <span class="required">*</span></label>
+          <input type="text" id="fCompany" required maxlength="200" placeholder="如：字节跳动">
+        </div>
+        <div class="form-row">
+          <label>岗位名称 <span class="required">*</span></label>
+          <input type="text" id="fPosition" required maxlength="200" placeholder="如：后端开发工程师">
+        </div>
+        <div class="form-row">
+          <label>投递时间 <span class="required">*</span></label>
+          <input type="date" id="fApplyDate" required>
+        </div>
+        <div class="form-row">
+          <label>备注</label>
+          <textarea id="fNotes" rows="3" placeholder="内推 / 官网 / 招聘软件..."></textarea>
+        </div>
+        <div class="form-section" id="stageSection">
+          <h3>状态与阶段时间（仅编辑时显示）</h3>
+          <div class="form-row">
+            <label>当前状态</label>
+            <select id="fStatus">
+              <option value="applied">已投递</option>
+              <option value="interviewed">面试中</option>
+              <option value="offered">已拿到 Offer</option>
+              <option value="rejected">未通过/已结束</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>面试时间</label>
+            <input type="date" id="fInterviewDate">
+          </div>
+          <div class="form-row">
+            <label>Offer 时间</label>
+            <input type="date" id="fOfferDate">
+          </div>
+          <div class="form-row">
+            <label>结束时间</label>
+            <input type="date" id="fEndDate">
+          </div>
+          <div class="form-row">
+            <label>结束原因</label>
+            <input type="text" id="fEndReason" maxlength="200" placeholder="如：未通过 / 放弃 / 已拒 Offer">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="btnCancelEdit">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== 状态流转弹窗 ========== -->
+  <div class="modal-overlay hidden" id="transitionModal">
+    <div class="modal">
+      <h2 id="transitionTitle">进入面试</h2>
+      <div class="form-row">
+        <label id="transitionDateLabel">面试时间</label>
+        <input type="date" id="transitionDate">
+      </div>
+      <div class="form-row hidden" id="transitionReasonRow">
+        <label>结束原因</label>
+        <input type="text" id="transitionReason" maxlength="200" placeholder="如：未通过 / 放弃">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btnCancelTransition">取消</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmTransition">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="/vendor/echarts.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

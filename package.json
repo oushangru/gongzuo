@@ -1,0 +1,19 @@
+{
+  "name": "job-tracker",
+  "version": "1.0.0",
+  "description": "个人求职进度管理系统：投递 → 面试 → Offer 全流程追踪与可视化看板",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch server.js",
+    "test": "node --disable-warning=ExperimentalWarning --test"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "echarts": "^5.5.1",
+    "express": "^4.21.2"
+  }
+}
